@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Al-Tuba Oil Depot - Tanks Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tahoma', 'Roboto', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a3f2c 0%, #0e2a1c 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 248, 225, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 48px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.4);
+            padding: 25px 20px 30px 20px;
+            transition: all 0.2s;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #c49a6c;
+            padding-bottom: 12px;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            color: #2c3a1f;
+            text-shadow: 2px 2px 0 #e9d6b0;
+            font-weight: 800;
+        }
+        .datetime {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: #2b4b2f;
+            color: #f9eec1;
+            padding: 8px 18px;
+            border-radius: 60px;
+            margin-top: 12px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: inset 0 1px 3px #00000033, 0 3px 6px rgba(0,0,0,0.2);
+        }
+        .datetime span {
+            background: #1f321b;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .grid-8 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 14px;
+            margin: 20px 0 15px;
+        }
+        .tank-card {
+            background: #feffea;
+            border-radius: 28px;
+            padding: 12px 6px;
+            text-align: center;
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+            border: 1px solid #deb887;
+        }
+        .tank-card label {
+            font-weight: bold;
+            display: block;
+            font-size: 1.1rem;
+            background: #b97f44;
+            color: white;
+            width: fit-content;
+            margin: 0 auto 8px auto;
+            padding: 2px 14px;
+            border-radius: 40px;
+        }
+        .tank-card input {
+            width: 100%;
+            padding: 12px 6px;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: bold;
+            background: #fff6e0;
+            border: 2px solid #ac8e5c;
+            border-radius: 24px;
+            color: black;
+            outline: none;
+            transition: 0.1s;
+        }
+        .tank-card input:focus {
+            border-color: #f39c12;
+            background: white;
+        }
+
+        .stok-area {
+            background: #e9d8b0;
+            margin: 10px 0 20px;
+            padding: 12px;
+            border-radius: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: inset 0 0 0 2px #fff7cf, 0 5px 12px black;
+        }
+        .stok-area label {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #2c2b26;
+        }
+        .stok-area input {
+            font-size: 2rem;
+            width: 200px;
+            text-align: center;
+            font-weight: bold;
+            background: #171d0e;
+            color: #f7d44a;
+            border: none;
+            border-radius: 48px;
+            padding: 8px 15px;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .main-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: space-between;
+            margin: 25px 0;
+        }
+        .stat-block {
+            flex: 1;
+            min-width: 230px;
+            background: #fff3e0;
+            border-radius: 40px;
+            padding: 15px;
+            box-shadow: 0 5px 0 #b78f54;
+        }
+        .stat-block h3 {
+            text-align: center;
+            background: #5b3e22;
+            display: inline-block;
+            width: 100%;
+            padding: 6px;
+            border-radius: 60px;
+            color: #ffefb9;
+            margin-bottom: 15px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            background: #fff2da;
+            margin: 12px 0;
+            padding: 8px 12px;
+            border-radius: 34px;
+            font-weight: bold;
+            font-size: 1rem;
+            border: 1px solid #cdaf86;
+        }
+        .stat-item span:first-child {
+            color: #3a2c1c;
+        }
+        .stat-item span:last-child {
+            background: #2c2b26;
+            padding: 4px 14px;
+            border-radius: 50px;
+            color: #ffefb0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .flow-section {
+            background: #d9c48b;
+            padding: 20px;
+            border-radius: 50px;
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+            align-items: flex-end;
+        }
+        .flow-item {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+        .flow-item label {
+            font-weight: bold;
+            background: #4f3e28;
+            padding: 4px 15px;
+            border-radius: 26px;
+            color: #fae67a;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .flow-item input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            border-radius: 40px;
+            border: none;
+            background: #fffbf0;
+            font-weight: bold;
+            color: black;
+            border: 1px solid #aa7c44;
+        }
+        .receive-box {
+            background: #3d522b;
+            border-radius: 40px;
+            padding: 10px 20px;
+            text-align: center;
+            color: #ffe9b6;
+        }
+        .receive-box label {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .receive-box input {
+            font-size: 2rem;
+            width: 200px;
+            text-align: center;
+            background: #fffaec;
+            border-radius: 60px;
+            border: none;
+            font-weight: bold;
+            color: black;
+            margin-top: 8px;
+        }
+        .extra-fields {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .extra-field {
+            background: #4f6b3a;
+            border-radius: 40px;
+            padding: 8px 20px;
+            text-align: center;
+            color: #fff0c0;
+        }
+        .extra-field label {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .extra-field input {
+            font-size: 1.4rem;
+            width: 120px;
+            text-align: center;
+            background: #fff0d0;
+            border-radius: 30px;
+            border: none;
+            font-weight: bold;
+            margin-left: 10px;
+            padding: 6px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+            margin: 35px 0 15px;
+        }
+        .btn {
+            border: none;
+            background: #2f4d2d;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 44px;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 4px 6px black;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-danger { background: #9e3c2b; }
+        .btn-warning { background: #cd8733; }
+        .btn-dark { background: #2b2b2b; }
+        .btn-schedule { background: #3a5e8c; }
+        .btn-stop { background: #8c3a3a; }
+        .btn-archive-view { background: #2c6e6e; }
+        .btn:hover { transform: scale(0.97); filter: brightness(1.05); }
+
+        .alert-msg {
+            background: #1a1f12d0;
+            backdrop-filter: blur(8px);
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #f9e0a0;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        input:disabled, input[readonly] {
+            background-color: #e0dbc8;
+            color: #1f2a0e;
+            cursor: not-allowed;
+        }
+
+        .schedule-panel {
+            background: #5b4c2e;
+            border-radius: 40px;
+            padding: 12px 25px;
+            margin: 15px 0 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        .schedule-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .schedule-controls select, .schedule-controls input {
+            border-radius: 30px;
+            border: none;
+            padding: 6px 12px;
+            background: #fff3da;
+            font-weight: bold;
+        }
+        .schedule-status {
+            background: #1e2b16;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: #d6ffb0;
+        }
+        .archive-viewer {
+            background: #2c2b1f;
+            border-radius: 40px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+            color: #ffefb0;
+        }
+        .archive-viewer select {
+            background: #fff3da;
+            padding: 6px 12px;
+            border-radius: 30px;
+            margin: 5px;
+        }
+        .archive-details {
+            background: #3e3a2a;
+            border-radius: 30px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+        }
+        .close-viewer {
+            float: right;
+            background: #9e3c2b;
+            padding: 4px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        @media (max-width: 720px) {
+            .dashboard { padding: 15px; }
+            .btn { padding: 8px 16px; font-size: 0.8rem; }
+            .extra-field input { width: 90px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard" id="appContainer">
+    <div class="header">
+        <h1>Al-Tuba Oil Depot</h1>
+        <div class="datetime" id="liveDateTime">
+            <span id="year">2025</span>
+            <span id="weekday">Tuesday</span>
+            <span id="date">01/01/2025</span>
+            <span id="time">00:00:00</span>
+        </div>
+    </div>
+
+    <div class="grid-8" id="tanksGrid"></div>
+
+    <div class="stok-area">
+        <label>🛢️ STOK (Total Sum)</label>
+        <input type="text" id="stokField" readonly value="">
+    </div>
+
+    <div class="main-stats">
+        <div class="stat-block">
+            <h3>🟦 METRIC (m³)</h3>
+            <div class="stat-item"><span>Total.m3 :</span><span id="totalM3"></span></div>
+            <div class="stat-item"><span>Avail.m3 :</span><span id="availM3"></span></div>
+            <div class="stat-item"><span>Free.m3 :</span><span id="freeM3"></span></div>
+        </div>
+        <div class="stat-block">
+            <h3>🛢️ BARRELS (bbl)</h3>
+            <div class="stat-item"><span>Total.b :</span><span id="totalB"></span></div>
+            <div class="stat-item"><span>Avail.b :</span><span id="availB"></span></div>
+            <div class="stat-item"><span>Free.b :</span><span id="freeB"></span></div>
+        </div>
+    </div>
+
+    <div class="flow-section">
+        <div class="flow-item"><label>Flow</label><input type="text" id="flowVal" value=""></div>
+        <div class="flow-item"><label>Rec</label><input type="text" id="recVal" value=""></div>
+        <div class="flow-item"><label>More</label><input type="text" id="moreVal" value=""></div>
+        <div class="flow-item"><label>Less</label><input type="text" id="lessVal" value=""></div>
+        <div class="flow-item"><label>Diff</label><input type="text" id="diffVal" readonly value=""></div>
+        <div class="receive-box"><label>📌 receive</label><input type="text" id="receiveField" readonly value=""></div>
+    </div>
+
+    <div class="extra-fields">
+        <div class="extra-field"><label>Flow/h :</label><input type="text" id="flowPerHour" readonly value=""></div>
+        <div class="extra-field"><label>Rec/h :</label><input type="text" id="recPerHour" readonly value=""></div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn" id="resetBtn">🧹 Reset</button>
+        <button class="btn btn-warning" id="imageBtn">📸 Save as JPG</button>
+        <button class="btn btn-danger" id="closeBtn">🚪 Close</button>
+        <button class="btn btn-dark" id="disableResetBtn">🔒 Disable / Restart</button>
+        <button class="btn btn-archive-view" id="viewArchiveBtn">📂 عرض الأرشيف</button>
+    </div>
+
+    <div class="schedule-panel">
+        <div class="schedule-controls">
+            <span style="color:white;">⏱ الجدولة:</span>
+            <select id="scheduleInterval">
+                <option value="3600000">كل ساعة</option>
+                <option value="21600000">كل 6 ساعات</option>
+                <option value="86400000">يومياً (00:00)</option>
+                <option value="custom">وقت محدد</option>
+            </select>
+            <div id="customTimeWrapper" style="display:none;">
+                <input type="time" id="customTime" step="60">
+            </div>
+            <button id="startScheduleBtn" class="btn btn-schedule">▶ تفعيل الجدولة</button>
+            <button id="stopScheduleBtn" class="btn btn-stop" style="display:none;">⏹ إيقاف الجدولة</button>
+        </div>
+        <span id="scheduleStatus" class="schedule-status">⏸ غير نشطة</span>
+    </div>
+
+    <div id="archiveViewer" class="archive-viewer">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong>📋 عرض البيانات المؤرشفة</strong>
+            <span class="close-viewer" id="closeViewerBtn">✖ إغلاق</span>
+        </div>
+        <div style="margin-top: 15px;">
+            <label>السنة: </label>
+            <select id="archiveYearSelect"><option value="">-- اختر سنة --</option></select>
+            <label>الشهر: </label>
+            <select id="archiveMonthSelect" disabled><option value="">-- اختر شهر --</option></select>
+            <label>اليوم: </label>
+            <select id="archiveDaySelect" disabled><option value="">-- اختر يوم --</option></select>
+            <label>الساعة: </label>
+            <select id="archiveHourSelect" disabled><option value="">-- اختر ساعة --</option></select>
+            <button id="loadArchiveBtn" class="btn" style="padding: 5px 15px; margin-left: 10px;">عرض</button>
+        </div>
+        <div id="archiveDetails" class="archive-details"></div>
+    </div>
+
+    <div class="alert-msg" id="notificationArea">✓ System ready | Programming: Osama Abdul Abbas</div>
+</div>
+
+<script>
+    // تعريف الخزانات
+    const tankNames = ['Tk.3', 'Tk.4', 'Tk.5', 'Tk.7', 'Tk.8', 'Tk.9', 'Tk.10', 'Tk.11'];
+    const tankIds = ['tk3','tk4','tk5','tk7','tk8','tk9','tk10','tk11'];
+    let tanksInputs = {};
+
+    const tanksGrid = document.getElementById('tanksGrid');
+    tankNames.forEach((name, idx) => {
+        const card = document.createElement('div');
+        card.className = 'tank-card';
+        const label = document.createElement('label');
+        label.textContent = name;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = '';
+        input.id = tankIds[idx];
+        input.classList.add('tank-input');
+        card.appendChild(label);
+        card.appendChild(input);
+        tanksGrid.appendChild(card);
+        tanksInputs[tankIds[idx]] = input;
+    });
+
+    // مراجع العناصر
+    const stokField = document.getElementById('stokField');
+    const totalM3Span = document.getElementById('totalM3');
+    const availM3Span = document.getElementById('availM3');
+    const freeM3Span = document.getElementById('freeM3');
+    const totalBSpan = document.getElementById('totalB');
+    const availBSpan = document.getElementById('availB');
+    const freeBSpan = document.getElementById('freeB');
+    const flowInput = document.getElementById('flowVal');
+    const recInput = document.getElementById('recVal');
+    const moreInput = document.getElementById('moreVal');
+    const lessInput = document.getElementById('lessVal');
+    const diffInput = document.getElementById('diffVal');
+    const receiveField = document.getElementById('receiveField');
+    const flowPerHour = document.getElementById('flowPerHour');
+    const recPerHour = document.getElementById('recPerHour');
+    const notificationDiv = document.getElementById('notificationArea');
+
+    let isProgramDisabled = false;
+
+    // دوال مساعدة للتهيئة والتنسيق
+    function formatNumberForDisplay(value) {
+        let num = parseFloat(value);
+        if (isNaN(num)) return '';
+        num = Math.abs(Math.round(num));
+        if (num === 0) return '';
+        return num.toLocaleString('en-US');
+    }
+    function parseFormattedNumber(str) {
+        if (!str || str.trim() === '') return 0;
+        let clean = str.replace(/,/g, '');
+        let num = parseFloat(clean);
+        return isNaN(num) ? 0 : num;
+    }
+    function setupInputFormatting(inputElement) {
+        inputElement.addEventListener('blur', function() {
+            if (isProgramDisabled) return;
+            let raw = inputElement.value;
+            let num = parseFormattedNumber(raw);
+            if (isNaN(num)) num = 0;
+            num = Math.abs(Math.round(num));
+            if (num === 0) inputElement.value = '';
+            else inputElement.value = formatNumberForDisplay(num);
+            inputElement.dispatchEvent(new Event('change'));
+        });
+        inputElement.addEventListener('focus', function() {
+            if (isProgramDisabled) return;
+            let currentVal = parseFormattedNumber(inputElement.value);
+            if (currentVal === 0 || isNaN(currentVal)) inputElement.value = '';
+            else inputElement.value = currentVal.toString();
+        });
+        inputElement.addEventListener('input', function(e) {
+            let val = e.target.value;
+            if (val === '') return;
+            let numeric = parseFloat(val.replace(/,/g, ''));
+            if (isNaN(numeric)) e.target.value = '';
+        });
+    }
+    function getNumericValue(inputEl) {
+        let raw = inputEl.value;
+        if (raw === '') return 0;
+        let num = parseFormattedNumber(raw);
+        return Math.abs(Math.round(num));
+    }
+    function setFormattedValue(inputEl, numValue) {
+        let absRounded = Math.abs(Math.round(numValue));
+        if (absRounded === 0) inputEl.value = '';
+        else inputEl.value = formatNumberForDisplay(absRounded);
+    }
+
+    function updateDiff() {
+        let more = getNumericValue(moreInput);
+        let less = getNumericValue(lessInput);
+        let diffValue = 0;
+        if (more !== 0) diffValue = more * 66;
+        else if (less !== 0) diffValue = less * 66;
+        setFormattedValue(diffInput, diffValue);
+        return diffValue;
+    }
+
+    function updateStokAndDerived() {
+        if (isProgramDisabled) return;
+        let sum = 0;
+        for (let id of tankIds) sum += getNumericValue(tanksInputs[id]);
+        if (sum === 0) stokField.value = '';
+        else stokField.value = formatNumberForDisplay(sum);
+        
+        let totalM3 = sum * 66;
+        let availM3 = totalM3 - 100000;
+        let freeM3 = 403600 - totalM3;
+        let totalB = totalM3 * 6.2898;
+        let availB = availM3 * 6.2898;
+        let freeB = freeM3 * 6.2898;
+        if (sum === 0) {
+            totalM3Span.innerText = availM3Span.innerText = freeM3Span.innerText = '';
+            totalBSpan.innerText = availBSpan.innerText = freeBSpan.innerText = '';
+        } else {
+            totalM3Span.innerText = formatNumberForDisplay(totalM3);
+            availM3Span.innerText = formatNumberForDisplay(availM3);
+            freeM3Span.innerText = formatNumberForDisplay(freeM3);
+            totalBSpan.innerText = formatNumberForDisplay(totalB);
+            availBSpan.innerText = formatNumberForDisplay(availB);
+            freeBSpan.innerText = formatNumberForDisplay(freeB);
+        }
+    }
+
+    function updateReceive() {
+        if (isProgramDisabled) return;
+        let flow = getNumericValue(flowInput);
+        let rec = getNumericValue(recInput);
+        let more = getNumericValue(moreInput);
+        let less = getNumericValue(lessInput);
+        let diff = updateDiff();
+        let result = 0;
+        if (more !== 0) result = diff + flow - rec;
+        else if (less !== 0) result = flow - diff - rec;
+        let finalResult = Math.abs(Math.round(result));
+        setFormattedValue(receiveField, finalResult);
+        // تحديث الحقول الإضافية (flow/h و rec/h)
+        updateExtraFields(flow, rec, finalResult);
+    }
+
+    // المعادلة الجديدة: rec/h = (Rec + receive) / 2
+    function updateExtraFields(flow, rec, receiveVal) {
+        let flowDiv2 = Math.round(flow / 2);
+        setFormattedValue(flowPerHour, flowDiv2);
+        let recAvg = Math.round((rec + receiveVal) / 2);
+        setFormattedValue(recPerHour, recAvg);
+    }
+
+    function resetAll() {
+        if (isProgramDisabled) { showNotification("⚠️ System disabled.", 2000); return; }
+        for (let id of tankIds) tanksInputs[id].value = '';
+        flowInput.value = recInput.value = moreInput.value = lessInput.value = '';
+        updateStokAndDerived(); updateReceive();
+        showNotification("✅ All fields cleared.", 2000);
+    }
+    function showNotification(msg, duration = 3000) {
+        notificationDiv.innerHTML = `🔔 ${msg}`;
+        setTimeout(() => {
+            if(notificationDiv.innerHTML.includes(msg))
+                notificationDiv.innerHTML = `✓ System ready | Programming: Osama Abdul Abbas`;
+        }, duration);
+    }
+
+    // ---------- الأرشيف التلقائي ----------
+    const STORAGE_KEY = 'OilDepotArchives';
+
+    function getCurrentSnapshot() {
+        let tanks = {};
+        for (let id of tankIds) tanks[id] = getNumericValue(tanksInputs[id]);
+        let flow = getNumericValue(flowInput);
+        let rec = getNumericValue(recInput);
+        let more = getNumericValue(moreInput);
+        let less = getNumericValue(lessInput);
+        let diff = getNumericValue(diffInput);
+        let receive = getNumericValue(receiveField);
+        let flowPerHourVal = getNumericValue(flowPerHour);
+        let recPerHourVal = getNumericValue(recPerHour);
+        let sum = 0; for (let id of tankIds) sum += tanks[id];
+        let stok = sum;
+        let totalM3 = sum * 66, availM3 = totalM3 - 100000, freeM3 = 403600 - totalM3;
+        let totalB = totalM3 * 6.2898, availB = availM3 * 6.2898, freeB = freeM3 * 6.2898;
+        return { tanks, flow, rec, more, less, diff, receive, stok,
+                 flowPerHour: flowPerHourVal, recPerHour: recPerHourVal,
+                 totalM3: Math.round(totalM3), availM3: Math.round(availM3), freeM3: Math.round(freeM3),
+                 totalB: Math.round(totalB), availB: Math.round(availB), freeB: Math.round(freeB) };
+    }
+
+    function saveArchiveAuto(year, month, day, hour) {
+        if (isProgramDisabled) return false;
+        const snapshot = getCurrentSnapshot();
+        const archiveRecord = { 
+            id: Date.now(), 
+            year, month, day, hour, 
+            timestamp: new Date().toISOString(), 
+            data: snapshot 
+        };
+        let archives = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        archives.push(archiveRecord);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(archives));
+        showNotification(`🤖 أرشيف تلقائي: ${year}/${month}/${day} ${hour}:00`, 2000);
+        return true;
+    }
+
+    // ---------- الجدولة ----------
+    let scheduleIntervalId = null;
+    let scheduleMode = null;
+    let customHour = null, customMinute = null;
+    const scheduleIntervalSelect = document.getElementById('scheduleInterval');
+    const customTimeWrapper = document.getElementById('customTimeWrapper');
+    const customTimeInput = document.getElementById('customTime');
+    const startScheduleBtn = document.getElementById('startScheduleBtn');
+    const stopScheduleBtn = document.getElementById('stopScheduleBtn');
+    const scheduleStatusSpan = document.getElementById('scheduleStatus');
+
+    function stopScheduler() {
+        if (scheduleIntervalId) {
+            if (scheduleMode === 'interval') clearInterval(scheduleIntervalId);
+            else clearTimeout(scheduleIntervalId);
+            scheduleIntervalId = null;
+        }
+        startScheduleBtn.style.display = 'inline-flex';
+        stopScheduleBtn.style.display = 'none';
+        scheduleStatusSpan.innerText = '⏸ غير نشطة';
+        scheduleStatusSpan.style.background = '#1e2b16';
+        showNotification("⏹ إيقاف الجدولة التلقائية.", 2000);
+    }
+
+    function startScheduler() {
+        if (isProgramDisabled) {
+            showNotification("⚠️ النظام معطل، لا يمكن تشغيل الجدولة.", 2500);
+            return;
+        }
+        if (scheduleIntervalId) stopScheduler();
+        const selected = scheduleIntervalSelect.value;
+        if (selected !== 'custom') {
+            let intervalMs = parseInt(selected);
+            scheduleMode = 'interval';
+            scheduleIntervalId = setInterval(() => {
+                if (!isProgramDisabled) {
+                    const now = new Date();
+                    saveArchiveAuto(now.getFullYear(), now.getMonth()+1, now.getDate(), now.getHours());
+                }
+            }, intervalMs);
+            let txt = intervalMs === 3600000 ? 'ساعة' : (intervalMs === 21600000 ? '6 ساعات' : 'يوم');
+            scheduleStatusSpan.innerText = `⏳ نشطة (كل ${txt})`;
+        } else {
+            if (!customTimeInput.value) {
+                showNotification("❌ الرجاء تحديد وقت (ساعة:دقيقة).", 2000);
+                return;
+            }
+            const [hour, minute] = customTimeInput.value.split(':').map(Number);
+            if (isNaN(hour) || isNaN(minute) || hour<0 || hour>23 || minute<0 || minute>59) {
+                showNotification("❌ وقت غير صالح.", 2000);
+                return;
+            }
+            customHour = hour;
+            customMinute = minute;
+            scheduleMode = 'custom';
+            function scheduleNext() {
+                const now = new Date();
+                let next = new Date(now);
+                next.setHours(customHour, customMinute, 0, 0);
+                if (next <= now) next.setDate(next.getDate() + 1);
+                const delay = next - now;
+                if (scheduleIntervalId) clearTimeout(scheduleIntervalId);
+                scheduleIntervalId = setTimeout(() => {
+                    if (!isProgramDisabled) {
+                        const nowExec = new Date();
+                        saveArchiveAuto(nowExec.getFullYear(), nowExec.getMonth()+1, nowExec.getDate(), nowExec.getHours());
+                    }
+                    scheduleNext();
+                }, delay);
+            }
+            scheduleNext();
+            scheduleStatusSpan.innerText = `⏳ نشطة (يومياً الساعة ${customHour.toString().padStart(2,'0')}:${customMinute.toString().padStart(2,'0')})`;
+        }
+        startScheduleBtn.style.display = 'none';
+        stopScheduleBtn.style.display = 'inline-flex';
+        scheduleStatusSpan.style.background = '#3c6e3c';
+        showNotification("▶ تم تفعيل الجدولة التلقائية.", 2000);
+    }
+
+    scheduleIntervalSelect.addEventListener('change', () => {
+        if (scheduleIntervalSelect.value === 'custom') customTimeWrapper.style.display = 'inline-block';
+        else customTimeWrapper.style.display = 'none';
+    });
+    startScheduleBtn.addEventListener('click', startScheduler);
+    stopScheduleBtn.addEventListener('click', stopScheduler);
+
+    // ---------- عرض الأرشيف (قوائم منسدلة) ----------
+    const archiveViewer = document.getElementById('archiveViewer');
+    const viewArchiveBtn = document.getElementById('viewArchiveBtn');
+    const closeViewerBtn = document.getElementById('closeViewerBtn');
+    const yearSelect = document.getElementById('archiveYearSelect');
+    const monthSelect = document.getElementById('archiveMonthSelect');
+    const daySelect = document.getElementById('archiveDaySelect');
+    const hourSelect = document.getElementById('archiveHourSelect');
+    const loadArchiveBtn = document.getElementById('loadArchiveBtn');
+    const archiveDetailsDiv = document.getElementById('archiveDetails');
+    let archivesList = [];
+
+    function loadArchivesList() {
+        archivesList = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    }
+    function populateYearSelect() {
+        loadArchivesList();
+        const years = [...new Set(archivesList.map(a => a.year))].sort((a,b)=>b-a);
+        yearSelect.innerHTML = '<option value="">-- اختر سنة --</option>';
+        years.forEach(y => {
+            let opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            yearSelect.appendChild(opt);
+        });
+        yearSelect.disabled = (years.length === 0);
+        monthSelect.disabled = true;
+        daySelect.disabled = true;
+        hourSelect.disabled = true;
+    }
+    yearSelect.addEventListener('change', () => {
+        const selectedYear = parseInt(yearSelect.value);
+        if (!selectedYear) {
+            monthSelect.disabled = true; monthSelect.innerHTML = '<option value="">-- اختر شهر --</option>';
+            daySelect.disabled = true; hourSelect.disabled = true;
+            return;
+        }
+        const months = [...new Set(archivesList.filter(a => a.year === selectedYear).map(a => a.month))].sort((a,b)=>a-b);
+        monthSelect.innerHTML = '<option value="">-- اختر شهر --</option>';
+        months.forEach(m => {
+            let opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            monthSelect.appendChild(opt);
+        });
+        monthSelect.disabled = false;
+        daySelect.disabled = true; hourSelect.disabled = true;
+    });
+    monthSelect.addEventListener('change', () => {
+        const selectedYear = parseInt(yearSelect.value);
+        const selectedMonth = parseInt(monthSelect.value);
+        if (!selectedYear || !selectedMonth) {
+            daySelect.disabled = true; hourSelect.disabled = true;
+            return;
+        }
+        const days = [...new Set(archivesList.filter(a => a.year === selectedYear && a.month === selectedMonth).map(a => a.day))].sort((a,b)=>a-b);
+        daySelect.innerHTML = '<option value="">-- اختر يوم --</option>';
+        days.forEach(d => {
+            let opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            daySelect.appendChild(opt);
+        });
+        daySelect.disabled = false;
+        hourSelect.disabled = true;
+    });
+    daySelect.addEventListener('change', () => {
+        const selectedYear = parseInt(yearSelect.value);
+        const selectedMonth = parseInt(monthSelect.value);
+        const selectedDay = parseInt(daySelect.value);
+        if (!selectedYear || !selectedMonth || !selectedDay) {
+            hourSelect.disabled = true;
+            return;
+        }
+        const hours = [...new Set(archivesList.filter(a => a.year === selectedYear && a.month === selectedMonth && a.day === selectedDay).map(a => a.hour))].sort((a,b)=>a-b);
+        hourSelect.innerHTML = '<option value="">-- اختر ساعة --</option>';
+        hours.forEach(h => {
+            let opt = document.createElement('option');
+            opt.value = h;
+            opt.textContent = h;
+            hourSelect.appendChild(opt);
+        });
+        hourSelect.disabled = false;
+    });
+    function displayArchive(record) {
+        if (!record) {
+            archiveDetailsDiv.innerHTML = '<p>❌ لا توجد بيانات لهذا التوقيت.</p>';
+            return;
+        }
+        const data = record.data;
+        let html = `<h4>📅 ${record.year}/${record.month}/${record.day} - الساعة ${record.hour}:00</h4>`;
+        html += `<table style="width:100%; border-collapse:collapse;">`;
+        html += `<tr><th style="text-align:left;">البيان</th><th style="text-align:right;">القيمة</th></tr>`;
+        html += `<tr><td>Stok (مجموع الخزانات)</td><td style="text-align:right;">${formatNumberForDisplay(data.stok)}</td></tr>`;
+        html += `<tr><td>Total m³</td><td style="text-align:right;">${formatNumberForDisplay(data.totalM3)}</td></tr>`;
+        html += `<tr><td>Avail m³</td><td style="text-align:right;">${formatNumberForDisplay(data.availM3)}</td></tr>`;
+        html += `<tr><td>Free m³</td><td style="text-align:right;">${formatNumberForDisplay(data.freeM3)}</td></tr>`;
+        html += `<tr><td>Total bbl</td><td style="text-align:right;">${formatNumberForDisplay(data.totalB)}</td></tr>`;
+        html += `<tr><td>Avail bbl</td><td style="text-align:right;">${formatNumberForDisplay(data.availB)}</td></tr>`;
+        html += `<tr><td>Free bbl</td><td style="text-align:right;">${formatNumberForDisplay(data.freeB)}</td></tr>`;
+        html += `<tr><td>Flow</td><td style="text-align:right;">${formatNumberForDisplay(data.flow)}</td></tr>`;
+        html += `<tr><td>Rec</td><td style="text-align:right;">${formatNumberForDisplay(data.rec)}</td></tr>`;
+        html += `<tr><td>More</td><td style="text-align:right;">${formatNumberForDisplay(data.more)}</td></tr>`;
+        html += `<tr><td>Less</td><td style="text-align:right;">${formatNumberForDisplay(data.less)}</td></tr>`;
+        html += `<tr><td>Diff</td><td style="text-align:right;">${formatNumberForDisplay(data.diff)}</td></tr>`;
+        html += `<tr><td>Receive</td><td style="text-align:right;">${formatNumberForDisplay(data.receive)}</td></tr>`;
+        html += `<tr><td>Flow/h</td><td style="text-align:right;">${formatNumberForDisplay(data.flowPerHour)}</td></tr>`;
+        html += `<tr><td>Rec/h</td><td style="text-align:right;">${formatNumberForDisplay(data.recPerHour)}</td></tr>`;
+        html += `</table>`;
+        html += `<h5>تفاصيل الخزانات:</h5><ul>`;
+        for (let i=0; i<tankIds.length; i++) {
+            let val = data.tanks[tankIds[i]];
+            html += `<li>${tankNames[i]}: ${formatNumberForDisplay(val)}</li>`;
+        }
+        html += `</ul>`;
+        archiveDetailsDiv.innerHTML = html;
+    }
+    loadArchiveBtn.addEventListener('click', () => {
+        const year = parseInt(yearSelect.value);
+        const month = parseInt(monthSelect.value);
+        const day = parseInt(daySelect.value);
+        const hour = parseInt(hourSelect.value);
+        if (!year || !month || !day || isNaN(hour)) {
+            showNotification("الرجاء اختيار سنة، شهر، يوم، وساعة.", 2000);
+            return;
+        }
+        loadArchivesList();
+        const found = archivesList.find(a => a.year === year && a.month === month && a.day === day && a.hour === hour);
+        if (found) displayArchive(found);
+        else archiveDetailsDiv.innerHTML = '<p>⚠️ لا يوجد أرشيف بهذه البيانات.</p>';
+    });
+    viewArchiveBtn.addEventListener('click', () => {
+        if (archiveViewer.style.display === 'none' || archiveViewer.style.display === '') {
+            loadArchivesList();
+            populateYearSelect();
+            archiveViewer.style.display = 'block';
+        } else {
+            archiveViewer.style.display = 'none';
+        }
+    });
+    closeViewerBtn.addEventListener('click', () => {
+        archiveViewer.style.display = 'none';
+    });
+
+    // باقي الوظائف (التاريخ الحي، الصورة، الإغلاق، التعطيل)
+    function updateDateTime() {
+        const now = new Date();
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        document.getElementById('year').innerText = now.getFullYear();
+        document.getElementById('weekday').innerText = days[now.getDay()];
+        document.getElementById('date').innerText = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
+        document.getElementById('time').innerText = now.toLocaleTimeString('en-US');
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    async function captureAsJPG() {
+        const element = document.getElementById('appContainer');
+        if(!element) return;
+        try {
+            showNotification("📸 Generating image...", 1500);
+            const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#fdf5e6', logging: false });
+            const link = document.createElement('a');
+            link.download = 'Al-Tuba_Depot.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+            showNotification("✅ Image saved", 2000);
+        } catch(e) { showNotification("❌ Failed", 2000); }
+    }
+    function closeProgram() {
+        if(confirm("Program will close.\nProgramming: Osama Abdul Abbas")) {
+            alert("Programming: Osama Abdul Abbas");
+            window.close();
+        }
+    }
+    function disableOrRestartWithPassword() {
+        const pwd = prompt("Enter password:");
+        if(pwd === "2291977") {
+            const choice = confirm("OK = DISABLE system\nCancel = RESTART system");
+            if(choice === true) {
+                if(!isProgramDisabled) {
+                    isProgramDisabled = true;
+                    for (let id of tankIds) tanksInputs[id].disabled = true;
+                    flowInput.disabled = recInput.disabled = moreInput.disabled = lessInput.disabled = diffInput.disabled = true;
+                    flowPerHour.disabled = true; recPerHour.disabled = true;
+                    document.getElementById('resetBtn').disabled = true;
+                    stopScheduler();
+                    showNotification("⚠️ SYSTEM DISABLED", 4000);
+                } else showNotification("Already disabled", 2000);
+            } else {
+                if(isProgramDisabled) {
+                    isProgramDisabled = false;
+                    for (let id of tankIds) tanksInputs[id].disabled = false;
+                    flowInput.disabled = recInput.disabled = moreInput.disabled = lessInput.disabled = diffInput.disabled = false;
+                    flowPerHour.disabled = false; recPerHour.disabled = false;
+                    document.getElementById('resetBtn').disabled = false;
+                }
+                resetAll();
+                showNotification("🔄 System RESTARTED", 3000);
+            }
+        } else showNotification("❌ Incorrect password!", 2000);
+    }
+
+    function bindEvents() {
+        for (let id of tankIds) {
+            const inp = tanksInputs[id];
+            setupInputFormatting(inp);
+            inp.addEventListener('change', () => updateStokAndDerived());
+        }
+        [flowInput, recInput, moreInput, lessInput].forEach(inp => {
+            setupInputFormatting(inp);
+            inp.addEventListener('change', () => { updateReceive(); updateStokAndDerived(); });
+        });
+        updateReceive();
+        updateStokAndDerived();
+    }
+    function init() {
+        bindEvents();
+        document.getElementById('resetBtn').addEventListener('click', resetAll);
+        document.getElementById('imageBtn').addEventListener('click', captureAsJPG);
+        document.getElementById('closeBtn').addEventListener('click', closeProgram);
+        document.getElementById('disableResetBtn').addEventListener('click', disableOrRestartWithPassword);
+        archiveViewer.style.display = 'none';
+        if(scheduleIntervalSelect.value === 'custom') customTimeWrapper.style.display = 'inline-block';
+        else customTimeWrapper.style.display = 'none';
+    }
+    init();
+</script>
+</body>
+</html>
