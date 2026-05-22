@@ -344,7 +344,7 @@
         </div>
     </div>
 
-    <!-- Flow section: Flow, Rec, More, Less, Diff (readonly), Receive -->
+    <!-- Flow section: Flow, Rec, More, Less, Diff, receive + new fields FLOW/2 , REC/2 -->
     <div class="flow-section">
         <div class="flow-item"><label>Flow</label><input type="text" id="flowVal" value=""></div>
         <div class="flow-item"><label>Rec</label><input type="text" id="recVal" value=""></div>
@@ -352,6 +352,9 @@
         <div class="flow-item"><label>Less</label><input type="text" id="lessVal" value=""></div>
         <div class="flow-item"><label>Diff</label><input type="text" id="diffVal" readonly value=""></div>
         <div class="receive-box"><label>📌 receive</label><input type="text" id="receiveField" readonly value=""></div>
+        <!-- NEW FIELDS: FLOW/2 and REC/2 -->
+        <div class="flow-item"><label>FLOW/2</label><input type="text" id="halfFlowField" readonly></div>
+        <div class="flow-item"><label>REC/2</label><input type="text" id="halfRecField" readonly></div>
     </div>
 
     <div class="action-buttons">
@@ -401,6 +404,10 @@
     const diffInput = document.getElementById('diffVal');
     const receiveField = document.getElementById('receiveField');
     const notificationDiv = document.getElementById('notificationArea');
+    
+    // New half fields references
+    const halfFlowField = document.getElementById('halfFlowField');
+    const halfRecField = document.getElementById('halfRecField');
 
     let isProgramDisabled = false;
 
@@ -413,23 +420,30 @@
         return num.toLocaleString('en-US');
     }
     
-    // NEW helper: format signed number (positive or negative) with commas and optional minus sign
+    // Helper: format signed number (positive or negative) with commas and optional minus sign
     function formatSignedNumber(value) {
         let num = parseFloat(value);
         if (isNaN(num)) return '';
         let rounded = Math.round(num);
         if (rounded === 0) return '';
-        // format absolute part with commas, then add minus if needed
         let absFormatted = Math.abs(rounded).toLocaleString('en-US');
         return rounded < 0 ? `-${absFormatted}` : absFormatted;
     }
 
-    // Parse formatted string back to number (for internal use)
+    // Parse formatted string back to number (positive only, for m3 counts)
     function parseFormattedNumber(str) {
         if (!str || str.trim() === '') return 0;
         let clean = str.replace(/,/g, '');
         let num = parseFloat(clean);
         return isNaN(num) ? 0 : num;
+    }
+    
+    // Parse signed string (can be negative, with commas)
+    function parseSignedNumber(str) {
+        if (!str || str.trim() === '') return 0;
+        let clean = str.replace(/,/g, '');
+        let num = parseFloat(clean);
+        return isNaN(num) ? 0 : Math.round(num);
     }
 
     // Apply formatting to input fields on blur, and also store numeric value internally
@@ -521,7 +535,6 @@
         let availB = availM3 * 6.2898;
         let freeB = freeM3 * 6.2898;
 
-        // Show only if sum != 0, otherwise leave empty
         if (sum === 0) {
             totalM3Span.innerText = '';
             availM3Span.innerText = '';
@@ -536,6 +549,32 @@
             totalBSpan.innerText = formatNumberForDisplay(totalB);
             availBSpan.innerText = formatNumberForDisplay(availB);
             freeBSpan.innerText = formatNumberForDisplay(freeB);
+        }
+    }
+
+    // NEW: Update FLOW/2 and REC/2 based on current Flow, Rec, and Receive (signed)
+    function updateHalfValues() {
+        if (isProgramDisabled) return;
+        
+        // Flow/2
+        let flowNum = getNumericValue(flowInput);
+        let halfFlow = Math.round(flowNum / 2);
+        if (halfFlow === 0) {
+            halfFlowField.value = '';
+        } else {
+            halfFlowField.value = formatNumberForDisplay(halfFlow);
+        }
+        
+        // REC/2 = (Rec + receive) / 2
+        let recNum = getNumericValue(recInput);
+        let receiveRaw = receiveField.value;
+        let receiveNum = parseSignedNumber(receiveRaw);
+        let halfRecRaw = (recNum + receiveNum) / 2;
+        let halfRec = Math.round(halfRecRaw);
+        if (halfRec === 0) {
+            halfRecField.value = '';
+        } else {
+            halfRecField.value = formatSignedNumber(halfRec);
         }
     }
 
@@ -557,17 +596,19 @@
         } else if (lessHasValue) {
             result = flow - diff - rec;
         } else {
-            // new requirement: when both more and less are zero, receive = Flow - Rec
+            // when both more and less are zero, receive = Flow - Rec
             result = flow - rec;
         }
         
-        // Display the signed result (allow negative values)
         let finalResult = Math.round(result);
         if (finalResult === 0) {
             receiveField.value = '';
         } else {
             receiveField.value = formatSignedNumber(finalResult);
         }
+        
+        // After receive is updated, refresh half values
+        updateHalfValues();
     }
 
     // Reset all fields (set to empty)
@@ -583,9 +624,9 @@
         recInput.value = '';
         moreInput.value = '';
         lessInput.value = '';
-        // Diff and receive will be updated automatically
+        // update Stok & derived and receive/diff/half
         updateStokAndDerived();
-        updateReceive();  // this will also update diff
+        updateReceive();  // this will also update diff and half values
         showNotification("✅ All fields cleared and reset.", 2000);
     }
 
@@ -640,7 +681,7 @@
         }
     }
 
-    // Disable / Restart with password
+    // Disable / Restart with password (also controls new half fields)
     function disableOrRestartWithPassword() {
         const pwd = prompt("Enter password to secure action:");
         if(pwd === "2291977") {
@@ -657,6 +698,9 @@
                     moreInput.disabled = true;
                     lessInput.disabled = true;
                     diffInput.disabled = true;
+                    receiveField.disabled = true;
+                    halfFlowField.disabled = true;
+                    halfRecField.disabled = true;
                     document.getElementById('resetBtn').disabled = true;
                     showNotification("⚠️ SYSTEM DISABLED by administrator. No edits allowed.", 4000);
                     notificationDiv.style.background = "#6b2e1f";
@@ -675,9 +719,12 @@
                     moreInput.disabled = false;
                     lessInput.disabled = false;
                     diffInput.disabled = false;
+                    receiveField.disabled = false;
+                    halfFlowField.disabled = false;
+                    halfRecField.disabled = false;
                     document.getElementById('resetBtn').disabled = false;
                 }
-                // reset all values to empty
+                // reset all values to empty (full fresh)
                 for (let id of tankIds) {
                     tanksInputs[id].value = '';
                 }
@@ -686,7 +733,7 @@
                 moreInput.value = '';
                 lessInput.value = '';
                 updateStokAndDerived();
-                updateReceive();
+                updateReceive();  // recompute diff, receive, half values
                 showNotification("🔄 System RESTARTED, all fields enabled and cleared.", 3000);
                 notificationDiv.style.background = "#1a1f12d0";
             }
@@ -706,21 +753,23 @@
         dynamicInputs.forEach(inp => {
             setupInputFormatting(inp);
             inp.addEventListener('change', () => {
-                updateReceive();
-                updateStokAndDerived(); // ensure any side effect
+                updateReceive();   // recalculates diff, receive & half values
+                updateStokAndDerived();
             });
         });
-        // diff is readonly, no formatting events but we set its value via updateDiff
     }
 
     function init() {
         bindEvents();
         updateStokAndDerived();
-        updateReceive();  // sets diff and receive
+        updateReceive();  // sets diff, receive and half values initially
         document.getElementById('resetBtn').addEventListener('click', resetAll);
         document.getElementById('imageBtn').addEventListener('click', captureAsJPG);
         document.getElementById('closeBtn').addEventListener('click', closeProgram);
         document.getElementById('disableResetBtn').addEventListener('click', disableOrRestartWithPassword);
+        
+        // Additional safety: ensure half fields are updated if receive changes via other triggers (already inside updateReceive)
+        // and also ensure that half fields formatting respects disabled state.
     }
 
     init();
