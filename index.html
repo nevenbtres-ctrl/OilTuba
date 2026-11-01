@@ -332,6 +332,40 @@
 </script>
 </head>
 <body>
+    <!-- شاشة التثبيت الإلزامية -->
+<div id="force-install-overlay" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  font-family: sans-serif;
+">
+  <img src="./icon-192.png" alt="icon" style="width: 96px; height: 96px; border-radius: 24px; margin-bottom: 24px;">
+  <h2 style="margin: 0 0 12px; color: #111;">ثبّت التطبيق للمتابعة</h2>
+  <p style="margin: 0 0 32px; color: #555; max-width: 320px; line-height: 1.6;">
+    هذا التطبيق مصمم ليعمل كتطبيق مستقل. يرجى تثبيته على شاشتك الرئيسية للاستمرار.
+  </p>
+  <button id="force-install-btn" style="
+    background: #317EFB;
+    color: #fff;
+    border: none;
+    padding: 16px 48px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(49,126,251,0.3);
+  ">
+    📲 تثبيت التطبيق
+  </button>
+  <p id="force-install-hint" style="display: none; margin-top: 24px; color: #888; font-size: 14px; max-width: 300px; line-height: 1.6;"></p>
+</div>
 <div class="dashboard" id="appContainer">
     <div class="header">
         <h1>Al-Tuba Oil Depot</h1>
