@@ -317,7 +317,7 @@
 <!-- دعم الآيفون (iOS) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="اسم برنامجك">
+<meta name="apple-mobile-web-app-title" content="Al-Tuba Oil Depot">
 <link rel="apple-touch-icon" href="./icon-192.png">
 
 <!-- تسجيل الـ Service Worker -->
@@ -830,5 +830,87 @@
 
     init();
 </script>
+
+<!-- ============================================================ -->
+<!-- 🟢 كود JavaScript لشاشة التثبيت الإلزامية (جديد - أضفناه هنا) -->
+<!-- ============================================================ -->
+<script>
+(function() {
+  const overlay = document.getElementById('force-install-overlay');
+  const installBtn = document.getElementById('force-install-btn');
+  const hint = document.getElementById('force-install-hint');
+
+  let deferredPrompt = null;
+
+  // اكتشاف إذا كان التطبيق مثبتًا ويعمل كـ standalone
+  function checkIfInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  }
+
+  // إذا كان مثبتًا، أخفِ الشاشة ولا تفعل شيئًا
+  if (checkIfInstalled()) {
+    overlay.style.display = 'none';
+    return;
+  }
+
+  // إظهار شاشة التثبيت فورًا
+  overlay.style.display = 'flex';
+
+  // التقاط حدث التثبيت من المتصفح
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  // عند الضغط على زر التثبيت
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        deferredPrompt = null;
+      } else {
+        hint.style.display = 'block';
+        hint.textContent = 'يجب تثبيت التطبيق لاستخدامه. اضغط على زر التثبيت مرة أخرى.';
+      }
+    } else {
+      showManualInstructions();
+    }
+  });
+
+  // تعليمات يدوية للمتصفحات التي لا تدعم beforeinstallprompt
+  function showManualInstructions() {
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isAndroid = /Android/.test(ua);
+
+    hint.style.display = 'block';
+
+    if (isIOS) {
+      hint.innerHTML = '📱 على iPhone: اضغط على زر <b>المشاركة</b> (المربع مع السهم) في Safari، ثم اختر <b>"إضافة إلى الشاشة الرئيسية"</b>.';
+      installBtn.style.display = 'none';
+    } else if (isAndroid) {
+      hint.innerHTML = '🤖 على أندرويد: افتح قائمة المتصفح (⋮) واختر <b>"تثبيت التطبيق"</b> أو <b>"إضافة إلى الشاشة الرئيسية"</b>.';
+    } else {
+      hint.innerHTML = '💻 افتح هذا الرابط من هاتفك، أو استخدم قائمة المتصفح واختر "تثبيت التطبيق".';
+    }
+  }
+
+  // إخفاء الشاشة عند اكتمال التثبيت
+  window.addEventListener('appinstalled', () => {
+    overlay.style.display = 'none';
+  });
+
+  // مراقبة تغيير وضع العرض (احتياطي)
+  window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+    if (e.matches) overlay.style.display = 'none';
+  });
+})();
+</script>
+<!-- ============================================================ -->
+<!-- 🟢 نهاية كود JavaScript لشاشة التثبيت -->
+<!-- ============================================================ -->
+
 </body>
 </html>
