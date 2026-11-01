@@ -308,6 +308,28 @@
             .stat-item span:last-child { font-size: 0.8rem; }
         }
     </style>
+    <!-- ملف الـ Manifest -->
+<link rel="manifest" href="./manifest.json">
+
+<!-- لون شريط الحالة على أندرويد -->
+<meta name="theme-color" content="#317EFB">
+
+<!-- دعم الآيفون (iOS) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="اسم برنامجك">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<!-- تسجيل الـ Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Service Worker: تم التسجيل بنجاح'))
+        .catch((err) => console.error('Service Worker: فشل التسجيل', err));
+    });
+  }
+</script>
 </head>
 <body>
 <div class="dashboard" id="appContainer">
